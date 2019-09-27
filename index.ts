@@ -212,3 +212,25 @@ class Tree {
 		})
 	}
 }
+
+class Renderer  {
+		
+	animator : Animator = new Animator()
+	tree : Tree = new Tree()
+
+	render(context : CanvasRenderingContext2D) {
+		this.tree.draw(context)
+	}
+
+	handleTap(cb : Function) {
+		this.tree.startUpdating(() => {
+			this.animator.start(() => {
+				cb()
+				this.tree.update(() => {
+					this.animator.stop()
+					cb()
+				})
+			})
+		})
+	}
+}

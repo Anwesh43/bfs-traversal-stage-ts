@@ -3,6 +3,10 @@ const h : number = window.innerHeight
 const scGap : number = 0.05 
 const strokeFactor : number = 90
 const delay : number = 50
+const ballSizeFactor : number = 15
+const foreColor : string = "#f44336"
+const backColor : string = "#BDBDBD"
+
 
 class Stage {
 		
@@ -42,5 +46,33 @@ class ScaleUtil {
 
 	static divideScale(scale : number, i : number, n : number) : number {
 		return Math.min(1 / n, ScaleUtil.maxScale(scale, i, n))
+	}
+}
+
+class DrawingUtil {
+	
+	static strokeCircle(context : CanvasRenderingContext2D, r : number) {
+		context.beginPath()
+		context.arc(0, 0, r, 0, 2 * Math.PI)
+		context.stroke()
+	}
+
+	static fillCircle(context : CanvasRenderingContext2D, r : number) {
+		context.beginPath()
+		context.arc(0, 0, r, 0, 2 * Math.PI)
+		context.fill()
+	}
+
+	static drawTreeNode(context : CanvasRenderingContext2D, x : number, y : number, scale : number) {
+		context.lineCap = 'round'
+		context.lineWidth = Math.min(w, h) / strokeFactor 
+		context.strokeStyle = foreColor
+		context.fillStyle = foreColor
+		const r : number = Math.min(w, h) / ballSizeFactor 
+		context.save()
+		context.translate(x, y)
+		DrawingUtil.strokeCircle(context, r)
+		DrawingUtil.fillCircle(context, r * ScaleUtil.divideScale(scale, 0, 2))
+		context.restore()
 	}
 }

@@ -166,3 +166,49 @@ class TreeNode {
 	}
 }
 
+class Tree {
+	
+	root : TreeNode = new TreeNode(0, 0)
+	dir : number = 1
+	nodes : Array<TreeNode> = []
+	animObjects : Array<TreeNode> = []
+
+	constructor() {
+		this.nodes.push(this.root)
+	}
+
+	draw(context : CanvasRenderingContext2D) {
+		this.root.draw(context)
+	}
+
+	update(cb : Function) {
+		for (var i = this.animObjects.length - 1; i >= 0; i--) {
+			const animObject = this.animObjects[i]
+			animObject.update(() => {
+				this.animObjects.splice(i, 1)
+				if (animObject.left) {
+					this.nodes.push(animObject.left)
+				}
+
+				if (animObject.right) {
+					this.nodes.push(animObject.right)
+				}
+				if (this.animObjects.length == 0) {
+					cb()
+				}
+			})
+		}
+	}
+
+	startUpdating(cb : Function) {
+		this.nodes.forEach((node) => {
+			node.startUpdating(() => {
+				this.animObjects.push(node)
+				if (this.animObjects.length == this.nodes.length) {
+					this.nodes = []
+					cb()
+				}
+			})
+		})
+	}
+}

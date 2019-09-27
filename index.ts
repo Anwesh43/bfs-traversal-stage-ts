@@ -3,7 +3,8 @@ const h : number = window.innerHeight
 const scGap : number = 0.05 
 const strokeFactor : number = 90
 const delay : number = 50
-const ballSizeFactor : number = 15
+const levels : number = 5
+const ballSizeFactor : number = 4
 const foreColor : string = "#f44336"
 const backColor : string = "#BDBDBD"
 
@@ -57,22 +58,36 @@ class DrawingUtil {
 		context.stroke()
 	}
 
+	static drawLine(context : CanvasRenderingContext2D, x1 : number, y1 : number, x2 : number, y2 : number) {
+		context.beginPath()
+		context.moveTo(x1, y1)
+		context.lineTo(x2, y2)
+		context.stroke()
+	}
+
 	static fillCircle(context : CanvasRenderingContext2D, r : number) {
 		context.beginPath()
 		context.arc(0, 0, r, 0, 2 * Math.PI)
 		context.fill()
 	}
 
-	static drawTreeNode(context : CanvasRenderingContext2D, x : number, y : number, scale : number) {
+	static drawTreeNode(context : CanvasRenderingContext2D, i : number, j : number, scale : number) {
+		const gap : number = Math.min(w, h) / (levels + 1)
+		const scFactor = j + 1 == levels ? 1 : 2
 		context.lineCap = 'round'
 		context.lineWidth = Math.min(w, h) / strokeFactor 
 		context.strokeStyle = foreColor
 		context.fillStyle = foreColor
-		const r : number = Math.min(w, h) / ballSizeFactor 
+		const r : number = gap / ballSizeFactor 
 		context.save()
-		context.translate(x, y)
+		context.translate(gap + i * gap, gap + j * gap)
 		DrawingUtil.strokeCircle(context, r)
-		DrawingUtil.fillCircle(context, r * ScaleUtil.divideScale(scale, 0, 2))
+		DrawingUtil.fillCircle(context, r * ScaleUtil.divideScale(scale, 0, scFactor))
+		if (j < levels - 1) {
+			const sc : number = ScaleUtil.divideScale(scale, 1, 2)
+			DrawingUtil.drawLine(context, 0, 0, -gap * sc, gap * sc)
+			DrawingUtil.drawLine(context, 0, 0, gap * sc, gap * sc)
+		}
 		context.restore()
 	}
 }
@@ -105,7 +120,7 @@ class Animator {
 	
 	animated : boolean = false 
 	interval : number 
-	
+
 	start(cb : Function) {
 		if (!this.animated) {
 			this.animated = true 
@@ -120,3 +135,34 @@ class Animator {
 		}
 	}
 }
+
+class TreeNode {
+		
+	right : TreeNode 
+	left : TreeNode 
+	state : State = new State()
+
+	constructor(private i : number, private j : number) {
+		this.addNeighbor()
+	}
+
+	addNeighbor() {
+		if (this.j < levels - 1) {
+			this.right = new TreeNode(this.i + 1, this.j + 1)
+			this.left = new TreeNode(this.i - 1, this.j - 1)
+		}
+	}
+
+	draw(context : CanvasRenderingContext2D) {
+		DrawingUtil.drawTreeNode(context, this.i, this.j, this.state.scale)
+	} 
+
+	update(cb : Function) {
+		this.state.update(cb)
+	}
+
+	startUpdating(cb : Function) {
+		this.state.startUpdating(cb)
+	}
+}
+

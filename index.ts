@@ -23,6 +23,7 @@ class Stage {
 	}
 
 	render() {
+		this.context.fillStyle = backColor
 		this.context.fillRect(0, 0, w, h)
 		this.renderer.render(this.context)
 	}
@@ -50,7 +51,7 @@ class ScaleUtil {
 	}
 
 	static divideScale(scale : number, i : number, n : number) : number {
-		return Math.min(1 / n, ScaleUtil.maxScale(scale, i, n))
+		return Math.min(1 / n, ScaleUtil.maxScale(scale, i, n)) * n
 	}
 }
 
@@ -84,7 +85,7 @@ class DrawingUtil {
 		context.fillStyle = foreColor
 		const r : number = gap / ballSizeFactor 
 		context.save()
-		context.translate(gap + i * gap, gap + j * gap)
+		context.translate(w /2 + i * gap, gap + j * gap)
 		DrawingUtil.strokeCircle(context, r)
 		DrawingUtil.fillCircle(context, r * ScaleUtil.divideScale(scale, 0, scFactor))
 		if (j < levels - 1) {
@@ -153,12 +154,18 @@ class TreeNode {
 	addNeighbor() {
 		if (this.j < levels - 1) {
 			this.right = new TreeNode(this.i + 1, this.j + 1)
-			this.left = new TreeNode(this.i - 1, this.j - 1)
+			this.left = new TreeNode(this.i - 1, this.j + 1)
 		}
 	}
 
 	draw(context : CanvasRenderingContext2D) {
 		DrawingUtil.drawTreeNode(context, this.i, this.j, this.state.scale)
+		if (this.left) {
+			this.left.draw(context)
+		}
+		if (this.right) {
+			this.right.draw(context)
+		}
 	} 
 
 	update(cb : Function) {
@@ -199,6 +206,7 @@ class Tree {
 				}
 				if (this.animObjects.length == 0) {
 					cb()
+					console.log(this.nodes)
 				}
 			})
 		}
@@ -210,6 +218,7 @@ class Tree {
 				this.animObjects.push(node)
 				if (this.animObjects.length == this.nodes.length) {
 					this.nodes = []
+					console.log(this.nodes)
 					cb()
 				}
 			})
